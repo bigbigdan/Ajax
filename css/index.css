@@ -1,0 +1,18 @@
+.table input{
+  border:none;
+  background: rgba(0,0,0,0);
+  outline: none;
+  width:40px;
+}
+.table{
+  cursor: default;
+}
+.opration{
+  text-align: center;
+}
+.opration .button{
+  display: inline-block;
+}
+.title{
+  text-align: center;
+}
