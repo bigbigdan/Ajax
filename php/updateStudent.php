@@ -1,6 +1,9 @@
 <?php
-  $xuehao = $_GET['x'];
-  $mysqli = new mysqli('localhost','root','','test');
-  $sql = "UPDATE `student` SET `xuehao`= '{$xuehao}' WHERE `id`=18";
-  $mysqli->query($sql);
+  sleep(1);
+  $mysqli = new mysqli('localhost','root','root','test');
+  $sql = "UPDATE `student` SET `{$_POST[key]}`= '{$_POST[value]}' WHERE `id`='{$_POST[id]}'";
+  echo $sql;
+  if( $mysqli->query($sql) ){
+    echo 5;
+  }
  ?>

@@ -20,7 +20,7 @@
           <th>性别</th>
           <th>年龄</th>
           <th>成绩</th>
-          <th><input type="checkbox"></th>
+          <th><input id="cn" type="checkbox"></th>
         </tr>
       </thead>
       <tbody>
@@ -28,17 +28,10 @@
       </tbody>
     </table>
     <div class="opration row">
-      <div class="col-xs-3">
-        <button id="shanchu" class="button btn-primary">删除</button>
-      </div>
-      <div class="col-xs-3">
-        <button class="button btn-primary">保存</button>
-      </div>
-      <div class="col-xs-3">
-        <button class="button btn-warning">新增</button>
-      </div>
-      <div class="col-xs-3">
-        <button id="tongbu" class="button btn-success">同步</button>
+      <div class="col-xs-5 pull-right">
+        <div id="tongbu" class="btn btn-warning">同步完成</div>
+        <div id="add" class="btn btn-success">新增</div>
+        <div id="shanchu" class="btn btn-danger">删除</div>
       </div>
     </div>
   </div>
