@@ -1,39 +1,367 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>学生管理</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/bootstrap.css">
-  <link rel="stylesheet" href="css/index.css">
-  <script src="js/jquery.js" charset="utf-8"></script>
-  <script src="js/index.js"  charset="utf-8"></script>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <style>
+  .container{
+    width: 600px;
+    border: 1px solid black;
+    padding: 40px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .container .table{
+    width: 100%;
+    border-spacing: 0;
+  }
+  .container .table th{
+    border-bottom:1px solid black;
+    padding: 20px 0;
+    width: 20%;
+  }
+  .container .table td{
+    border-bottom:1px solid black;
+    padding: 17px 0;
+    width: 20%;
+  }
+  .edit{
+    padding: 5px;
+    cursor: pointer;
+    color:#36937c;
+  }
+
+  .button{
+    margin-top: 20px 3px 0 3px;
+    cursor: pointer;
+    padding: 12px 120px;
+    color:white;
+    box-sizing: border-box;
+    display: inline-block;
+  }
+  .delete{
+    background: rgb(241, 93, 29);
+  }
+  .add{
+    background: rgb(24, 176, 62);
+  }
+
+  .table input{
+    text-align: center;
+    width: 50%;
+    border:none;
+    border-bottom: 1px solid #948212;
+    outline:none;
+  }
+  .table tbody td{
+    position: relative;
+  }
+  .table input[type=checkbox]{
+    width: auto;
+  }
+
+  ul,li{
+    margin:0;
+    padding:0;
+  }
+  .op{
+    margin-top:20px;
+  }
+  ul,li{
+    list-style: none;
+  }
+  .op li{
+    width: 50%;
+    float:left;
+  }
+  .clearfix::after{
+    content: '';
+    clear:both;
+    display: block;
+  }
+
+  .alertbox{
+    position: absolute;
+    background: rgba(0,0,0,0.3);
+    top:0;
+    left:0;
+    right: 0;
+    bottom:0;
+  }
+
+  .alertbox .alertbox-inner{
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border:1px solid black;
+    background: white;
+    margin:auto;
+    top:0;
+    left:0;
+    right: 0;
+    bottom:0;
+    padding: 40px;
+  }
+
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1 class="title">学生管理系统</h1>
-    <table class="table table-striped">
+    <h3>学生管理系统</h3>
+    <table class="table">
       <thead>
-        <tr>
-          <th>学号</th>
-          <th>姓名</th>
-          <th>性别</th>
-          <th>年龄</th>
-          <th>成绩</th>
-          <th><input id="cn" type="checkbox"></th>
-        </tr>
+        <th data-role="id" order="true">学号</th>
+        <th data-role="name" order="true">姓名</th>
+        <th data-role="sex" order="true">性别</th>
+        <th data-role="age" order="true">年龄</th>
+        <th class="opration"><input type="checkbox" id="togglecheck"></th>
       </thead>
       <tbody>
-        <!-- <tr> <th scope="row">1</th> <td><input type="text" name="username" value="Mark"></td> <td>男</td> <td>16</td> <td>98</td> <td><input type="checkbox"></td> </tr> -->
       </tbody>
     </table>
-    <div class="opration row">
-      <div class="col-xs-5 pull-right">
-        <div id="tongbu" class="btn btn-warning">同步完成</div>
-        <div id="add" class="btn btn-success">新增</div>
-        <div id="shanchu" class="btn btn-danger">删除</div>
-      </div>
-    </div>
+    <ul class="clearfix op">
+      <li><div class="button add">✚</div></li>
+      <li><div class="button delete">✘</div></li>
+    </ul>
+
+    <div alertbox></div>
+
   </div>
+  <script>
+  var
+
+  students,
+
+  templateTr,
+
+  templateAlert,
+
+  tbody = document.querySelector('.table tbody'),
+  add = document.querySelector('.add'),
+  remove = document.querySelector('.delete'),
+  togglecheck = document.querySelector('#togglecheck');
+
+  var render = function (){
+
+    tbody.innerHTML = '';
+
+    var html = '';
+    students.forEach( function( v ){
+      html += templateTr.replace(/\{\{(\w+)\}\}/g,function(){
+        return v[ arguments[1] ];
+      })
+    } );
+    tbody.innerHTML = html;
+  }
+
+  var savedata = function () {
+    localStorage.students = JSON.stringify(students);
+  }
+
+
+  var updateStudent = function (id,key,value) {
+    students.forEach(function (v) {
+      if( v.id === id){
+        v[key] = value;
+      }
+    })
+    savedata();
+  }
+
+  var toggleeditable = function (tr) {
+    var els = tr.querySelectorAll('td[data-role]');
+    if( tr.classList.contains('editing') ){
+      for( var i = 0; i < els.length; i++){
+        var el = els[i];
+        var value = el.firstElementChild.value;
+        el.innerHTML = value;
+      }
+      tr.classList.remove('editing');
+    }else{
+      for( var i=0; i<els.length; i++){
+        var el = els[i];
+        var value = el.innerHTML;
+        el.innerHTML = '<input type="text" value='+value+'>';
+      }
+
+      if( this!== window && this.querySelector('input') ){
+        this.querySelector('input').focus();
+      }else{
+        els[0].querySelector('input').focus();
+      }
+
+      tr.classList.add('editing');
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  add.addEventListener('click',function (e) {
+    var id = students.length ? ( students[students.length-1].id + 1) : 1001;
+    students.push({id:id,name:'',sex:'',age:''});
+    savedata();
+    render();
+    var tr = document.querySelector('tbody tr:last-child');
+    toggleeditable( tr );
+  },false);
+
+  remove.addEventListener('click',function (e) {
+    var els = tbody.querySelectorAll('input');
+    for(var i = 0; i < els.length; i++) {
+      if( els[i].checked ){
+        tbody.removeChild( els[i].parentElement.parentElement );
+        deleteStudent( Number( els[i].value ) );
+      }
+    }
+    togglecheck.checked = false;
+  },false);
+
+  togglecheck.addEventListener('click',function (e) {
+    var els = tbody.querySelectorAll('input');
+    for(var i = 0; i < els.length; i++){
+      els[i].checked = this.checked;
+    }
+  });
+
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  var deleteStudent = function (id) {
+    students = students.filter(function (v) {
+      return v.id !== id;
+    });
+    savedata();
+  };
+
+  tbody.addEventListener('click',function (e) {
+    var el = e.target;
+    if( el.nodeName === 'TD' ){
+      if ( document.querySelector('.editing') ){
+        toggleeditable( document.querySelector('.editing') );
+      }
+      toggleeditable.call(el,el.parentElement);
+
+    }else if( el.nodeName === 'INPUT' ){
+      var els = tbody.querySelectorAll('input');
+      for(var i = 0, j=0 ; i < els.length; i++){
+        if( els[i].checked ){
+          j++;
+        }
+      }
+      if( j === students.length ){
+        togglecheck.checked = true;
+      }
+    }
+  });
+
+  tbody.addEventListener('keyup',function (e) {
+    var el = e.target;
+    var id = Number(el.parentElement.parentElement.getAttribute('data-id'));
+    var key = el.parentElement.getAttribute('data-role');
+    updateStudent(id,key,el.value);
+  })
+
+
+  ////////////////////////////////////////////////////////////////////////////
+  var header = document.querySelector('.table thead');
+
+  var sortHandler = function (e) {
+    var filter = this.getAttribute('data-role');
+
+    var state =  (this.getAttribute('order') === 'true') ? true : false;
+    this.setAttribute('order',!state);
+
+    students = students.sort( function(pre,next) {
+      return state? ( pre[filter] > next[filter] ):( pre[filter] < next[filter] );
+    })
+
+    render();
+  }
+
+  header.addEventListener('click',function (e){
+    var el = e.target;
+    if( el.hasAttribute('data-role') ){
+      sortHandler.call(el,e);
+    }
+  })
+
+
+  tbody.ondblclick = function (e) {
+    var el = e.target;
+    if( el.nodeName === 'TD' ){
+      var xuehao = Number( el.parentElement.getAttribute('data-id') );
+      data =  students.filter(function (v) {
+        return v.id === xuehao;
+      })
+      document.body.innerHTML += templateAlert.replace(/\{\{(\w+)\}\}/g,function(){
+        return data[0][ arguments[1] ];
+      });
+
+    }
+  }
+
+
+  var $ = {
+    ajax:function( options ){
+
+      if( !options.url ){
+        return;
+      }
+
+      var config = {
+        type:'get',
+        dataType:'text',
+        success:null,
+        error:null
+      }
+
+      for( var op in options ){
+        config[ op ] = options[op];
+      }
+
+      var xhr = new XMLHttpRequest();
+      console.log(xhr);
+      xhr.addEventListener('readystatechange', function(){
+        if( this.readyState === 4 && this.status === 200 ){
+          var response = ( config.dataType === 'text' ) ? this.responseText : ( JSON.parse(this.response) )
+          config.success &&  config.success.call(this,response);
+        }else if ( this.readyStatechange === 4 && this.status == 404 ) {
+          var response =  this.responseText;
+          config.error && config.error.call(this,responseText);
+        }
+      })
+
+      xhr.open( 'get', config.url, true );
+      xhr.send();
+
+    }
+  }
+
+  $.ajax({
+    url:'http://127.0.0.1:8887/template.html',
+    type:'get',
+    dataType:'text',
+    success:function(data){
+      templateTr = data;
+      $.ajax({
+        url:'http://127.0.0.1:8887/database.json',
+        type:'get',
+        dataType:'json',
+        success:function(data){
+          students = data;
+          render();
+        }
+      });
+    }
+  })
+  $.ajax({
+    url:'http://127.0.0.1:8887/stuInfo.html',
+    type:'get',
+    dataType:'text',
+    success:function ( data ) {
+      templateAlert = data;
+    }
+  })
+
+  </script>
 </body>
 </html>
